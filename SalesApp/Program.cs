@@ -1,6 +1,7 @@
 ﻿using System;
 using CLI;
 using SalesLib;
+using MySql.Data.MySqlClient;
 
 namespace SalesApp
 {
@@ -15,11 +16,23 @@ namespace SalesApp
                 case "1": // 1. Оформление заказа
                     InitOrder();
                     break;
-                case "2": // 2. Экспорт списка продуктов
+                case "2": // 2. Добавление данных о покупке // Добавил для домашнего задания
+                    InsertOrder();
+                    break;
+                case "3": // 3. Экспорт списка продуктов
                     ExportProducts();
                     break;
-                case "3": // 3. Импорт списка продуктов
+                case "4": // 4. Импорт списка продуктов
                     ImportProducts();
+                    break;
+                case "5": // 5. Экспорт списка закзов // Добавил для домашнего задания
+                    ExportOrders();
+                    break;
+                case "6": // 6. Экспорт списка пользователей с указанием их дисконтной программы  // Добавил для домашнего задания
+                    ExportBuyer();
+                    break;
+                case "7": // 7. Импорт списка пользователей с указанием их дисконтной программы  // Добавил для домашнего задания
+                    ImportBuyer();
                     break;
             }
         }
@@ -29,6 +42,7 @@ namespace SalesApp
             var db = new DataBase();
             var products = db.GetProducts();
             var buyers = db.GetBuyers();
+
             Buyer buyer;
 
             foreach (var item in buyers)
@@ -45,14 +59,14 @@ namespace SalesApp
             {
                 buyer = buyers[(int)(buyer_id - 1)];
             }
-            
+
             Show.PrintLn($"{buyer.Name} - {buyer.Discount}");
-            
+
             foreach (var product in products)
             {
                 Show.PrintLn($"{product.Id}: {product.Name}, {product.Price}");
             }
-            
+
             Show.Print("Введите номер продукта: ");
             var product_id = uint.Parse(Console.ReadLine());
             Show.Print("Введите количество: ");
@@ -71,6 +85,37 @@ namespace SalesApp
             Show.PrintLn($"Вам необходимо заплатить - {total_price}");
         }
 
+/*Домашнее задание.
+Добавить в программу (https://github.com/itstep-shambala/Sales.git) возможность добавления данных о покупке после ввода 
+всей необходимой информации. Т.е.нужно от пользователя получить данные для всех полей таблицы tab_orders и написать 
+запрос на добавление в неё строки.*/
+                 
+        static void InsertOrder()
+        {
+            var db = new DataBase();
+            var ord = new Order();
+            Show.PrintLn("Введите данные о заказе: ");
+            Show.Print("Номер покупателя  ");
+            ord.BuyerId = uint.Parse(Console.ReadLine());
+            Show.Print("Номер продавца  ");
+            ord.SellerId = uint.Parse(Console.ReadLine());
+            Show.Print("Дата  ");
+            ord.Date = Console.ReadLine();            
+            ord.Date = DateTime.Now.ToString("yyyyMMddHHmmss");
+            Show.Print("Номер продукта  ");
+            ord.ProductId = uint.Parse(Console.ReadLine());
+            Show.Print("Цена  ");
+            ord.Amount = uint.Parse(Console.ReadLine());
+            Show.Print("Итоговая стоимость  ");
+            ord.TotalPrice = uint.Parse(Console.ReadLine());
+            db.AddOrder(ord);
+            var orders = db.GetOrders();
+            foreach (var order in orders)
+            {
+                Show.PrintLn($"{order.Id}: {order.BuyerId}, {order.Date} {order.Amount}, {order.TotalPrice}");
+            }
+//--------------------------------------------------------------------------------------------
+        }
         static void ExportProducts()
         {
             var db = new DataBase();
@@ -81,6 +126,24 @@ namespace SalesApp
         {
             var db = new DataBase();
             db.ImportProductsFromCSV("products.csv");
+        }
+        //Домашнее задание.
+        // Добавить возможность экспорта заказов, экспорта и импорта списка
+        // пользователей с указанием их дисконтной программы.
+        static void ExportOrders()
+        {
+            var db = new DataBase();
+            db.ExportOrdersToCSV("opders.csv");
+        }
+        static void ExportBuyer()
+        {
+            var db = new DataBase();
+            db.ExportBuyersTypeDiscountToCSV("buyers.csv");
+        }
+        static void ImportBuyer()
+        {
+            var db = new DataBase();
+            db.ImportBuyersFromCSV("buyers.csv");
         }
     }
 }
