@@ -136,7 +136,7 @@ namespace SalesLib
             {
                 var id = res.GetUInt32("id");
                 var buyer_id = res.GetUInt32("buyer_id");
-                var seller_id = res.GetUInt32("seller_id");               
+                var seller_id = res.GetUInt32("seller_id");
                 var date = res.GetString("date");
                 var product_id = res.GetUInt32("product_id");
                 var amount = res.GetUInt32("amount");
@@ -230,6 +230,8 @@ namespace SalesLib
             }
             Close();
         }
+
+        // Первый вариант импорта (неправильный) в специально созданную новую таблицу
         public void ImportBuyersFromCSV(string path) // Добавил для домашнего задания
         {
             var buyers_csv = new List<Buyer>();
@@ -254,6 +256,45 @@ namespace SalesLib
             {
                 var sql = $"INSERT INTO tab_users (name, type, discount) VALUES ('{buyer.Name}', '{buyer.Type}', {buyer.Discount});";
                 command.CommandText = sql;
+                command.ExecuteNonQuery();
+            }
+            Close();
+        }
+
+        // Второй вариант импорта (правильный) в уже существующие таблицы
+        public void ImportBuyers1FromCSV(string path) // Добавил для домашнего задания
+        {
+            var buyers_csv = new List<Buyer>();
+
+            using var file = new StreamReader(path);
+
+            var line = string.Empty;
+            while ((line = file.ReadLine()) != null)
+            {
+                var temp = line.Split('|');
+                var buyer = new Buyer
+                {
+                    Id = uint.Parse(temp[0]),
+                    First_Name = temp[1],
+                    Last_Name = temp[2],
+                    Phone = temp[3],
+                    Type = temp[4],
+                    Discount = uint.Parse(temp[5])
+                };
+                buyers_csv.Add(buyer);
+            }
+            Open();
+            foreach (var buyer in buyers_csv)
+            {
+                var sql = $"INSERT INTO tab_people (first_name, last_name, phone) VALUES ('{buyer.First_Name}','{buyer.Last_Name}', '{buyer.Phone}');";
+                var sql1 = $"INSERT INTO tab_discounts (type, discount) VALUES ('{buyer.Type}', {buyer.Discount});";
+                var sql2 = $"INSERT INTO tab_buyers (people_id, discount_id) VALUES ((SELECT id FROM tab_people WHERE id = (SELECT MAX(id) FROM tab_people)), " +
+                           $"(SELECT id FROM tab_discounts WHERE id = (SELECT MAX(id) FROM tab_discounts)));";
+                command.CommandText = sql;
+                command.ExecuteNonQuery();
+                command.CommandText = sql1;
+                command.ExecuteNonQuery();
+                command.CommandText = sql2;
                 command.ExecuteNonQuery();
             }
             Close();

@@ -34,6 +34,9 @@ namespace SalesApp
                 case "7": // 7. Импорт списка пользователей с указанием их дисконтной программы  // Добавил для домашнего задания
                     ImportBuyer();
                     break;
+                case "8": // 8. Импорт списка пользователей с указанием их дисконтной программы  // Добавил для домашнего задания (второй вариант правильный)
+                    ImportBuyer1();
+                    break;
             }
         }
 
@@ -144,6 +147,11 @@ namespace SalesApp
         {
             var db = new DataBase();
             db.ImportBuyersFromCSV("buyers.csv");
+        }
+        static void ImportBuyer1()
+        {
+            var db = new DataBase();
+            db.ImportBuyers1FromCSV("buyers1.csv");
         }
     }
 }
